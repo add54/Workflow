@@ -20,6 +20,7 @@ video_title = str(video.text)
 with open('data.json', 'r') as f:
 	data = json.load(f)
 	past_title = data["title"]
+	past_id = data["id"]
 
 if past_title == video_title:
 	print("Don't post")
@@ -31,21 +32,28 @@ else:
 	# download thumbnail and post to twitter
 	video_url = str(browser.current_url)
 	video_id = video_url.split("=", 1)[1]
-	thumbnailurl = 'https://img.youtube.com/vi/' + video_id + '/maxresdefault.jpg'
-	thumbnail = wget.download(thumbnailurl)
-	image_path = 'maxresdefault.jpg'
-	post_to_twitter(image_path, video_title, video_url)
 
-	# move image into folder
-	image_num = data["image_num"] + 1
-	working_dir = os.getcwd()
-	old_path = os.path.join(working_dir, image_path)
-	new_path = os.path.join(working_dir, "Photos", str(image_num), image_path)
-	os.rename(old_path, new_path)
+	if past_id == video_id:
+		print("Don't post")
+		print("Last updated " + l_updated)
+		print("Videotitle has been changed, but the video is still the same")
+	else:
+		thumbnailurl = 'https://img.youtube.com/vi/' + video_id + '/maxresdefault.jpg'
+		thumbnail = wget.download(thumbnailurl)
+		image_path = 'maxresdefault.jpg'
+		post_to_twitter(image_path, video_title, video_url)
 
-	# update data.json
-	data["title"] = video_title
-	data["last_updated"] = str(datetime.date.today())
-	data["image_num"] = image_num
-	with open("data.json", "w") as f:
-		json.dump(data, f)
+		# move image into folder
+		image_num = data["image_num"] + 1
+		working_dir = os.getcwd()
+		old_path = os.path.join(working_dir, image_path)
+		new_path = os.path.join(working_dir, "Photos", str(image_num), image_path)
+		os.rename(old_path, new_path)
+
+		# update data.json
+		data["title"] = video_title
+		data["last_updated"] = str(datetime.date.today())
+		data["image_num"] = image_num
+		data["id"] = video_id
+		with open("data.json", "w") as f:
+			json.dump(data, f)
