@@ -22,6 +22,7 @@ with open('data.json', 'r') as f:
 	past_title = data["title"]
 	past_id = data["id"]
 
+# don't post to twitter if the previous post and this post has the same title
 if past_title == video_title:
 	print("Don't post")
 	l_updated = data["last_updated"]
@@ -29,7 +30,7 @@ if past_title == video_title:
 else: 
 	video.click()
 
-	# download thumbnail and post to twitter
+	# get video id
 	video_url = str(browser.current_url)
 	video_id = video_url.split("=", 1)[1]
 
@@ -38,6 +39,7 @@ else:
 		print("Last updated " + l_updated)
 		print("Videotitle has been changed, but the video is still the same")
 	else:
+		# download thumbnail and post to twitter
 		thumbnailurl = 'https://img.youtube.com/vi/' + video_id + '/maxresdefault.jpg'
 		thumbnail = wget.download(thumbnailurl)
 		image_path = 'maxresdefault.jpg'
