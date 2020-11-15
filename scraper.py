@@ -17,54 +17,67 @@ url = "https://www.youtube.com/c/KalleHallden/videos"
 browser.get(url)
 video = browser.find_element_by_xpath('//*[@id="video-title"]')
 video_title = str(video.text)
-with open('data.json','r') as f:
-	data=json.load(f)
-	past_title = data["title"]
 
+with open('data.json', 'r') as f:
+	data = json.load(f)
+	past_title = data["title"]
+	past_id = data["id"]
+
+# don't post to twitter if the previous post and this post has the same title
 if past_title == video_title:
 	print("Don't post")
-	l_updated=data["last_updated"]
-	print("Last updated was " + l_updated)
+	l_updated = data["last_updated"]
+	print("Last updated " + l_updated)
 else: 
 	video.click()
 
+	# get video id
 	video_link = str(browser.current_url)
 	video_id = video_link.split("=", 1)[1]
-	thumbnailurl = 'https://img.youtube.com/vi/' + video_id + '/maxresdefault.jpg'
-	thumbnail = wget.download(thumbnailurl)
-	image_path = 'maxresdefault.jpg'
 
-	while True:
-		print("Do you want to post to Instagram? Y/N")
-		insta_input = str(input())
-		insta_input = insta_input.lower()
-		if insta_input != 'n' or 'y':
-			print("NOOO")
-			continue
-		else:
-			break
-	
-	while True:
-		print("Do you want to post to Twitter? Y/N")
-		twitter_input = str(input())
-		twitter_input = twitter_input.lower()
-		if twitter_input != 'n' or 'y':
-			continue
-		else:
-			break
+	# check if previous and current has same ID
+	if past_id == video_id:
+		print("Don't post")
+		print("Last updated " + l_updated)
+		print("Videotitle has been changed, but the video is still the same")
+	else:
+		thumbnailurl = 'https://img.youtube.com/vi/' + video_id + '/maxresdefault.jpg'
+		thumbnail = wget.download(thumbnailurl)
+		image_path = 'maxresdefault.jpg'
 
-	if insta_input == 'y':
-		instagram_post(image_path, video_title)
-	if twitter_input == 'y':
-		post_to_twitter(image_path, video_title, video_link)
+		while True:
+			print("Do you want to post to Instagram? Y/N")
+			insta_input = str(input())
+			insta_input = insta_input.lower()
+			if insta_input != 'n' or 'y':
+				print("NOOO")
+				continue
+			else:
+				break
+		
+		while True:
+			print("Do you want to post to Twitter? Y/N")
+			twitter_input = str(input())
+			twitter_input = twitter_input.lower()
+			if twitter_input != 'n' or 'y':
+				continue
+			else:
+				break
 
-	# move image into folder
-	working_dir = os.getcwd()
-	old_path = os.path.join(working_dir, image_path)
-	new_path = os.path.join(working_dir + "\Photos", video_title)
-	os.rename(old_path, new_path)
+		if insta_input == 'y':
+			instagram_post(image_path, video_title)
+		if twitter_input == 'y':
+			post_to_twitter(image_path, video_title, video_link)
 
-	data["title"]=video_title
-	data["last_updated"]=str(datetime.date.today())
-	with open("data.json","w") as f:
-		json.dump(data,f)
+		# move image into folder
+		working_dir = os.getcwd()
+		old_path = os.path.join(working_dir, image_path)
+		new_path = os.path.join(working_dir, "Photos", video_title)
+		os.rename(old_path, new_path)
+
+		# update data.json
+		data["title"] = video_title
+		data["last_updated"] = str(datetime.date.today())
+		data["id"] = video_id
+		with open("data.json", "w") as f:
+			json.dump(data, f)
